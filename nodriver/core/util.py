@@ -141,26 +141,31 @@ def free_port() -> int:
 def deconstruct_browser():
     import time
 
-    for _ in __registered__instances__:
-        if not _.stopped:
-            _.stop()
+    for instance in __registered__instances__:
+        if not instance.stopped:
+            instance.stop()
+
+        if not instance.config or instance.config.uses_custom_data_dir:
+            continue
+
+        user_data_dir = instance.config.user_data_dir
         for attempt in range(5):
             try:
-                if _.config and not _.config.uses_custom_data_dir:
-                    shutil.rmtree(_.config.user_data_dir, ignore_errors=False)
-            except FileNotFoundError as e:
+                shutil.rmtree(user_data_dir, ignore_errors=False)
+                print(f"Successfully removed temp profile {user_data_dir}")
+                break
+            except FileNotFoundError:
+                print(f"Temp profile {user_data_dir} already removed")
                 break
             except (PermissionError, OSError) as e:
                 if attempt == 4:
                     logger.debug(
-                        "problem removing data dir %s\nConsider checking whether it's there and remove it by hand\nerror: %s",
-                        _.config.user_data_dir,
+                        "Failed to remove data dir %s. Please check manually. Error: %s",
+                        user_data_dir,
                         e,
                     )
-                    break
                 time.sleep(0.15)
-                continue
-        print("successfully removed temp profile %s" % _.config.user_data_dir)
+
 
 
 def filter_recurse_all(
