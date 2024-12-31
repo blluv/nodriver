@@ -284,7 +284,7 @@ class Browser:
             connect_existing = True
         else:
             self.config.host = "127.0.0.1"
-            self.config.port = util.free_port()
+            self.config.port = 0
 
         if not connect_existing:
             logger.debug(
@@ -333,6 +333,11 @@ class Browser:
                 )
             )
             self._process_pid = self._process.pid
+
+            await self._process.stderr.readuntil(b"DevTools listening on ")
+            line = await self._process.stderr.readline()
+
+            self.config.port = util.parse_ws_addr(line.decode())
 
         self._http = HTTPApi((self.config.host, self.config.port))
         util.get_registered_instances().add(self)

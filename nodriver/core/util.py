@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import shutil
 import types
 import typing
@@ -339,3 +340,10 @@ def cdp_get_module(domain: Union[str, types.ModuleType]):
                     "could not find cdp module from input '%s'" % domain
                 )
     return domain_mod
+
+def parse_ws_addr(line: str):
+    match = re.match("ws:\/\/([^:]+):(\d+)\/", line)
+    if not match:
+        raise Exception("failed to get port")
+    
+    return int(match.group(2))

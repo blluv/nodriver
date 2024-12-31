@@ -195,7 +195,7 @@ class Config:
             args.append("--no-sandbox")
         if self.host:
             args.append("--remote-debugging-host=%s" % self.host)
-        if self.port:
+        if self.port is not None:
             args.append("--remote-debugging-port=%s" % self.port)
         return args
 
