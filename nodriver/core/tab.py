@@ -634,6 +634,69 @@ class Tab(Connection):
         finally:
             await self.send(cdp.dom.disable())
 
+    async def find_element_by_search(
+        self,
+        query: str,
+    ) -> Union[element.Element, None]:
+        doc = await self.send(cdp.dom.get_document(-1, True))
+        search_id, nresult = await self.send(cdp.dom.perform_search(query, True))
+
+        node_ids = await self.send(cdp.dom.get_search_results(search_id, 0, nresult))
+        await self.send(cdp.dom.discard_search_results(search_id))
+
+        if not node_ids:
+            return None
+
+        TEXT_NODE_TYPE = 3
+
+        for nid in node_ids:
+            node = util.filter_recurse(doc, lambda n: n.node_id == nid)
+            try:
+                elem = element.create(node, self, doc)
+            except Exception: 
+                continue
+            if elem.node_type == TEXT_NODE_TYPE:
+                if not elem.parent:
+                    await elem.update()
+
+                return elem.parent or elem
+            else:
+                return elem
+                
+        return None
+    
+    async def find_elements_by_search(
+        self,
+        query: str,
+    ) -> list[element.Element]:
+        doc = await self.send(cdp.dom.get_document(-1, True))
+        search_id, nresult = await self.send(cdp.dom.perform_search(query, True))
+
+        node_ids = await self.send(cdp.dom.get_search_results(search_id, 0, nresult))
+        await self.send(cdp.dom.discard_search_results(search_id))
+
+        if not node_ids:
+            return []
+
+        TEXT_NODE_TYPE = 3
+
+        items = []
+        for nid in node_ids:
+            node = util.filter_recurse(doc, lambda n: n.node_id == nid)
+            try:
+                elem = element.create(node, self, doc)
+            except Exception: 
+                continue
+            if elem.node_type == TEXT_NODE_TYPE:
+                if not elem.parent:
+                    await elem.update()
+
+                items.append(elem.parent or elem)
+            else:
+                items.append(elem)
+                
+        return items
+    
     async def back(self):
         """
         history back
