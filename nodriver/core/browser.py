@@ -223,7 +223,11 @@ class Browser:
             self.targets.remove(current_tab)
 
     async def get(
-        self, url="chrome://welcome", new_tab: bool = False, new_window: bool = False
+        self,
+        url="chrome://welcome",
+        new_tab: bool = False,
+        new_window: bool = False,
+        referrer: str | None = None,
     ) -> tab.Tab:
         """top level get. utilizes the first tab to retrieve given url.
 
@@ -258,7 +262,7 @@ class Browser:
                 filter(lambda item: item.type_ == "page", self.targets)
             )
             # use the tab to navigate to new url
-            frame_id, loader_id, *_ = await connection.send(cdp.page.navigate(url))
+            frame_id, loader_id, *_ = await connection.send(cdp.page.navigate(url, referrer=referrer))
             # update the frame_id on the tab
             connection.frame_id = frame_id
             connection.browser = self
@@ -510,7 +514,6 @@ class Browser:
                     existing_tab.target.__dict__.update(t.__dict__)
                     break
             else:
-
                 self.targets.append(
                     Connection(
                         (
@@ -526,7 +529,6 @@ class Browser:
         await asyncio.sleep(0)
 
     async def __aenter__(self):
-
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
