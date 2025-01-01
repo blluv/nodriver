@@ -460,19 +460,17 @@ class Element:
         self._remote_object = await self._tab.send(
             cdp.dom.resolve_node(backend_node_id=self.backend_node_id)
         )
-        result: typing.Tuple[cdp.runtime.RemoteObject, typing.Any] = (
-            await self._tab.send(
-                cdp.runtime.call_function_on(
-                    js_function,
-                    object_id=self._remote_object.object_id,
-                    arguments=[
-                        cdp.runtime.CallArgument(
-                            object_id=self._remote_object.object_id
-                        )
-                    ],
-                    return_by_value=True,
-                    user_gesture=True,
-                )
+        result: typing.Tuple[
+            cdp.runtime.RemoteObject, typing.Any
+        ] = await self._tab.send(
+            cdp.runtime.call_function_on(
+                js_function,
+                object_id=self._remote_object.object_id,
+                arguments=[
+                    cdp.runtime.CallArgument(object_id=self._remote_object.object_id)
+                ],
+                return_by_value=True,
+                user_gesture=True,
             )
         )
         if result and result[0]:
@@ -1082,6 +1080,20 @@ class Element:
 
     async def is_recording(self):
         return await self.apply('(vid) => vid["_recording"]')
+
+    async def callFunctionOn(
+        self, func: str, arguments: list[cdp.runtime.CallArgument]
+    ):
+        return await self._tab.send(
+            cdp.runtime.call_function_on(
+                func,
+                object_id=self._remote_object.object_id,
+                arguments=arguments,
+                await_promise=True,
+                return_by_value=True,
+                user_gesture=True,
+            )
+        )
 
     def _make_attrs(self):
         sav = None
