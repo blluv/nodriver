@@ -334,6 +334,7 @@ class Browser:
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     close_fds=is_posix,
+                    env=self.config.env
                 )
             )
             self._process_pid = self._process.pid

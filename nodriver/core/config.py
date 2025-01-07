@@ -42,6 +42,7 @@ class Config:
         host: str = AUTO,
         port: int = AUTO,
         expert: bool = AUTO,
+        env: dict[str, str] = {},
         **kwargs: dict,
     ):
         """
@@ -106,6 +107,8 @@ class Config:
 
         self.autodiscover_targets = True
         self.lang = lang
+
+        self.env = env
 
         # other keyword args will be accessible by attribute
         self.__dict__.update(kwargs)
