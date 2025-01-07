@@ -1082,7 +1082,7 @@ class Element:
         return await self.apply('(vid) => vid["_recording"]')
 
     async def callFunctionOn(
-        self, func: str, arguments: list[cdp.runtime.CallArgument]
+        self, func: str, arguments: list[cdp.runtime.CallArgument] = []
     ):
         return await self._tab.send(
             cdp.runtime.call_function_on(
